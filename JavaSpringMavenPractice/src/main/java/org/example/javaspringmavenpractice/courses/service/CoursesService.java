@@ -1,7 +1,9 @@
 package org.example.javaspringmavenpractice.courses.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.example.javaspringmavenpractice.courses.controller.CoursesController;
 import org.example.javaspringmavenpractice.courses.dto.CourseDTO;
+import org.example.javaspringmavenpractice.courses.dto.UserDTO;
 import org.example.javaspringmavenpractice.courses.model.Course;
 import org.example.javaspringmavenpractice.courses.model.Enrollment;
 import org.example.javaspringmavenpractice.courses.model.User;
@@ -20,14 +22,13 @@ public class CoursesService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final CoursesController coursesController;
     private InstructorRepository instructorRepository;
+
     public CoursesService(UserRepository userRepository, CourseRepository courseRepository, EnrollmentRepository enrollmentRepository,
-                          CoursesController coursesController, InstructorRepository instructorRepository) {
+                           InstructorRepository instructorRepository) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
-        this.coursesController = coursesController;
         this.instructorRepository = instructorRepository;
     }
 
@@ -36,8 +37,8 @@ public class CoursesService {
     }
 
     public List<CourseDTO> getAllCourses() {
-     List<Course> courses = courseRepository.findAll();
-     return courseToDTO(courses);
+        List<Course> courses = courseRepository.findAll();
+        return courseToDTO(courses);
     }
 
     public void saveUser(User user) {
@@ -48,29 +49,54 @@ public class CoursesService {
         enrollmentRepository.save(enrollment);
     }
 
-    public List<User> getUsersOnCourse(Long courseId) {
-        List<Enrollment> enrollments = enrollmentRepository.findAll();
-        List<User> users = new ArrayList<>();
-        for (Enrollment enrollment : enrollments) {
-            if (enrollment.getCourse().getId().equals(courseId)) {
-                users.add(enrollment.getUser());
-            }
-        }
+    public List<UserDTO> getUsersOnCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new EntityNotFoundException("Course not found"));
+        Optional<List<Enrollment>> enrollments = enrollmentRepository.findByCourseId(courseId);
+        if(enrollments.isPresent()) {
 
-        return users;
+        List<User> users = enrollments.get().stream().map(Enrollment::getUser).toList();
+            return userToDTO(users);
+        }else throw new EntityNotFoundException("Course not found");
+
     }
 
     public List<CourseDTO> getCoursesByInstructor(Long instructorId) {
         return instructorRepository.findById(instructorId)
                 .map(instructor -> courseToDTO(instructor.getCourses()))
-                .orElse(new ArrayList<>());
+                .orElseThrow(() -> new EntityNotFoundException("Course not found"));
+    }
+
+    public List<CourseDTO> getCoursesOfUser(Long userId) {
+        Optional<List<Enrollment>> courseEnrollmentList = enrollmentRepository.findByUserId(userId);
+        if (courseEnrollmentList.isPresent()) {
+            List<Course> courseList = new ArrayList<>();
+            for (Enrollment enrollment : courseEnrollmentList.get()) {
+                courseList.add(enrollment.getCourse());
+            }
+            return courseToDTO(courseList);
+        } else throw new EntityNotFoundException("Course not found");
+    }
+
+    public List<UserDTO> userToDTO(List<User> users) {
+        List<UserDTO> userToDTO = new ArrayList<>();
+        for(User user : users){
+            List<Enrollment> enrollments = user.getCourses();
+            List<Course> courses = new ArrayList<>();
+            for(Enrollment enrollment : enrollments){
+                courses.add(enrollment.getCourse());
+            }
+            List<CourseDTO> courseDTOs = courseToDTO(courses);
+            userToDTO.add(new UserDTO(user.getId(),user.getNickname(),courseDTOs));
+        }
+        return userToDTO;
     }
 
     public List<CourseDTO> courseToDTO(List<Course> courses) {
         List<CourseDTO> courseToDTO = new ArrayList<>();
-        for(Course course : courses) {
+        for (Course course : courses) {
             courseToDTO.add(new CourseDTO(course.getName(), course.getDescription(), course.getHours()));
         }
         return courseToDTO;
     }
+
 }

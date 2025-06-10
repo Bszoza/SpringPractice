@@ -1,19 +1,19 @@
 package org.example.javaspringmavenpractice.courses.controller;
 
 import org.example.javaspringmavenpractice.courses.dto.CourseDTO;
+import org.example.javaspringmavenpractice.courses.dto.UserDTO;
 import org.example.javaspringmavenpractice.courses.model.Course;
 import org.example.javaspringmavenpractice.courses.model.Enrollment;
 import org.example.javaspringmavenpractice.courses.model.User;
-import org.example.javaspringmavenpractice.courses.repository.CourseRepository;
-import org.example.javaspringmavenpractice.courses.repository.UserRepository;
 import org.example.javaspringmavenpractice.courses.service.CoursesService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class CoursesController {
-    private CoursesService coursesService;
+    private final CoursesService coursesService;
 
     public CoursesController(CoursesService coursesService) {
         this.coursesService = coursesService;
@@ -41,7 +41,7 @@ public class CoursesController {
     }
 
     @GetMapping("/courses/{id}/users")
-    public List<User> getUsersOnCourse(@PathVariable Long id) {
+    public List<UserDTO> getUsersOnCourse(@PathVariable Long id) {
         return coursesService.getUsersOnCourse(id);
     }
 
@@ -50,6 +50,10 @@ public class CoursesController {
         return coursesService.getCoursesByInstructor(id);
     }
 
+    @GetMapping("/users/{id}/courses")
+    public List<CourseDTO> getCoursesOfUser(@PathVariable Long id){
+        return coursesService.getCoursesOfUser(id);
+    }
 
 
 }
