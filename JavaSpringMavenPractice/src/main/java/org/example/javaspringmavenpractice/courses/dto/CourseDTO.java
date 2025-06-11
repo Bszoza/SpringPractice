@@ -1,9 +1,12 @@
 package org.example.javaspringmavenpractice.courses.dto;
 
+import java.util.List;
+
 public class CourseDTO {
     private String name;
     private String description;
     private Integer hours;
+    private List<UserDTO> users;
 
     public CourseDTO() {
     }
@@ -38,6 +41,13 @@ public class CourseDTO {
         this.hours = hours;
     }
 
+    public List<UserDTO> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<UserDTO> users) {
+        this.users = users;
+    }
 
     @Override
     public String toString() {

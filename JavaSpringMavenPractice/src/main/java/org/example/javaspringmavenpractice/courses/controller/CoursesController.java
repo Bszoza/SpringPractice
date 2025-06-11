@@ -6,6 +6,7 @@ import org.example.javaspringmavenpractice.courses.model.Course;
 import org.example.javaspringmavenpractice.courses.model.Enrollment;
 import org.example.javaspringmavenpractice.courses.model.User;
 import org.example.javaspringmavenpractice.courses.service.CoursesService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,5 +56,20 @@ public class CoursesController {
         return coursesService.getCoursesOfUser(id);
     }
 
+    @DeleteMapping("/delete/users/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable Long id) {
+        coursesService.deleteUser(id);
+    }
+
+    @PutMapping("/courses/{id}")
+    public void putCourse(@PathVariable Long id, @RequestBody CourseDTO course) {
+        coursesService.courseEdit(id, course);
+    }
+
+    @GetMapping("/courses/{id}")
+    public CourseDTO getCourseAndStudents(@PathVariable Long id) {
+        return coursesService.courseAndStudents(id);
+    }
 
 }

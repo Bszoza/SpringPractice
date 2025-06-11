@@ -3,6 +3,7 @@ package org.example.javaspringmavenpractice.courses.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 public class Enrollment {
@@ -64,6 +65,19 @@ public class Enrollment {
 
     public void setCompleted(Boolean completed0) {
         this.completed = completed0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Enrollment that = (Enrollment) o;
+        return Objects.equals(user, that.user) && Objects.equals(course, that.course) && Objects.equals(enrollmentDate, that.enrollmentDate) && Objects.equals(completed, that.completed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, course, enrollmentDate, completed);
     }
 
 }
